@@ -13,6 +13,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WhisperCppDemo"
         tools:targetApi="31">
+
+        <service android:name="de.geosearchef.whisperinput.WhisperInputMethodService"
+            android:label="@string/input_method_label"
+            android:permission="android.permission.BIND_INPUT_METHOD"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.view.InputMethod" />
+            </intent-filter>
+            <meta-data android:name="android.view.im"
+                android:resource="@xml/input_method" />
+        </service>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

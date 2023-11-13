@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">WhisperCppDemo</string>
+    <string name="app_name">WhisperInput</string>
+    <string name="input_method_label">WhisperInput</string>
+    <string name="input_method_subtype_name">WhisperInput</string>
 </resources>

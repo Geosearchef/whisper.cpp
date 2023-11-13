@@ -1,0 +1,7 @@
+<input-method xmlns:android="http://schemas.android.com/apk/res/android"
+    android:icon="@drawable/ic_launcher_foreground">
+    <subtype android:name="@string/input_method_subtype_name"
+        android:icon="@drawable/ic_launcher_foreground"
+        android:languageTag="en-US"
+        android:imeSubtypeMode="voice" />
+</input-method>
