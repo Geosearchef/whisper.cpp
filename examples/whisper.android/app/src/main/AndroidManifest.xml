@@ -11,7 +11,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.WhisperCppDemo"
+        android:theme="@style/Theme.WhisperInput"
         tools:targetApi="31">
 
         <service android:name="de.geosearchef.whisperinput.WhisperInputMethodService"

@@ -6,6 +6,8 @@ import android.content.pm.PackageManager
 import android.inputmethodservice.InputMethodService
 import android.net.Uri
 import android.provider.Settings
+import android.view.ContextThemeWrapper
+import android.view.LayoutInflater
 import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
@@ -37,7 +39,9 @@ class WhisperInputMethodService : InputMethodService() {
 
     @OptIn(ExperimentalPermissionsApi::class)
     override fun onCreateInputView(): View {
-        val view = layoutInflater.inflate(R.layout.input_method_layout, null)
+//        applicationContext.setTheme(R.style.Theme_WhisperInput)
+        val inflater = LayoutInflater.from(ContextThemeWrapper(this, R.style.Theme_WhisperInput))
+        val view = inflater.inflate(R.layout.input_method_layout, null)
 
         recordButton = view.findViewById(R.id.recordButton)
         computationIndicator = view.findViewById(R.id.computationIndicator)

@@ -15,7 +15,8 @@
             android:layout_width="0sp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Auto" />
+            android:text="Auto"
+            android:checked="true" />
 
         <RadioButton
             android:id="@+id/languageSelectorEnglish"
@@ -36,9 +37,13 @@
             android:layout_width="0sp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="English Model" />
+            android:text="Eng. Model" />
 
     </RadioGroup>
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="20sp"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -64,7 +69,8 @@
                     android:id="@+id/modelSelectorBalanced"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Balanced" />
+                    android:text="Balanced"
+                    android:checked="true" />
                 <RadioButton
                     android:id="@+id/modelSelectorFast"
                     android:layout_width="match_parent"
@@ -72,10 +78,35 @@
                     android:text="Fast" />
             </RadioGroup>
 
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10sp"/>
+
             <Switch
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Translate"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <ProgressBar
+                    android:id="@+id/modelLoadingIndicator"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="?android:attr/progressBarStyleSmall"
+                    android:visibility="invisible"
+                    />
+
+                <ProgressBar
+                    android:id="@+id/computationIndicator"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="?android:attr/progressBarStyleSmall"
+                    android:visibility="invisible"
+                    />
+            </LinearLayout>
 
         </LinearLayout>
 
@@ -103,28 +134,16 @@
                 android:enabled="false"
                 />
 
-            <Button
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10sp"/>
+
+            <ImageButton
                 android:id="@+id/spaceButton"
                 android:layout_width="match_parent"
                 android:layout_height="50sp"
-                android:text="Space"
+                android:src="@drawable/space_bar_24px"
                 android:textSize="16sp"
-                />
-
-            <ProgressBar
-                android:id="@+id/modelLoadingIndicator"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="?android:attr/progressBarStyleLarge"
-                android:visibility="invisible"
-                />
-
-            <ProgressBar
-                android:id="@+id/computationIndicator"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="?android:attr/progressBarStyleLarge"
-                android:visibility="invisible"
                 />
 
         </LinearLayout>
@@ -135,18 +154,18 @@
             android:orientation="vertical"
             android:layout_weight="1">
 
-            <Button
+            <ImageButton
                 android:id="@+id/deleteButton"
                 android:layout_width="match_parent"
                 android:layout_height="50sp"
-                android:text="Delete"
+                android:src="@drawable/backspace_24px"
                 android:textSize="16sp" />
 
-            <Button
+            <ImageButton
                 android:id="@+id/enterButton"
                 android:layout_width="match_parent"
                 android:layout_height="50sp"
-                android:text="Enter"
+                android:src="@drawable/keyboard_return_24px"
                 android:textSize="16sp" />
 
             <LinearLayout
@@ -154,19 +173,19 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <Button
+                <ImageButton
                     android:id="@+id/defaultInputMethodSwitchButton"
                     android:layout_width="0sp"
                     android:layout_height="50sp"
-                    android:text="Switch"
+                    android:src="@drawable/keyboard_previous_language_24px"
                     android:textSize="16sp"
                     android:layout_weight="1" />
 
-                <Button
+                <ImageButton
                     android:id="@+id/exitButton"
                     android:layout_width="0sp"
                     android:layout_height="50sp"
-                    android:text="Exit"
+                    android:src="@drawable/keyboard_off_24px"
                     android:textSize="16sp"
                     android:layout_weight="1"/>
 
