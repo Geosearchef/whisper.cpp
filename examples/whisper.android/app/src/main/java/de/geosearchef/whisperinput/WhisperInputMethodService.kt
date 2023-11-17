@@ -56,6 +56,8 @@ class WhisperInputMethodService : InputMethodService() {
     lateinit var translateSwitch: Switch
 
     var isRecording: Boolean = false
+    var isImprovePending: Boolean = false
+    var lastInsert: String = ""
 
     override fun onCreateInputView(): View {
 //        applicationContext.setTheme(R.style.Theme_WhisperInput)
@@ -113,15 +115,20 @@ class WhisperInputMethodService : InputMethodService() {
             }
         }
 
+        improveButton.setOnClickListener {
+            if(currentInputConnection.getTextBeforeCursor(lastInsert.length, 0) == lastInsert) {
+                currentInputConnection.deleteSurroundingText(lastInsert.length, 0)
+            }
+
+            isImprovePending = true
+            getImprovedModelButton(view.findViewById(modelSelectorGroup.checkedRadioButtonId) as Button).isChecked = true
+        }
+
         // TODO: lifecycle mgmt on the IME
 
         modelSelectorGroup.setOnCheckedChangeListener { group, selectedId ->
-            loadModel(when(selectedId) {
-                R.id.modelSelectorAccurate -> WhisperAccessor.Model.SMALL_Q
-                R.id.modelSelectorBalanced -> WhisperAccessor.Model.BASE
-                R.id.modelSelectorFast -> WhisperAccessor.Model.TINY
-                else -> WhisperAccessor.Model.BASE
-            })
+//            loadModel(getSelectedModel(selectedId))
+            loadSelectedModel()
         }
 
         spaceButton.setOnClickListener {
@@ -181,6 +188,24 @@ class WhisperInputMethodService : InputMethodService() {
         return view
     }
 
+    private fun getSelectedModel(selectedId: Int) = when (selectedId) {
+        R.id.modelSelectorAccurate -> WhisperAccessor.Model.SMALL_Q
+        R.id.modelSelectorBalanced -> WhisperAccessor.Model.BASE
+        R.id.modelSelectorFast -> WhisperAccessor.Model.TINY
+        else -> WhisperAccessor.Model.BASE
+    }
+
+    private fun getImprovedModelButton(current: Button) = when(current) {
+        modelSelectorAccurate -> modelSelectorAccurate
+        modelSelectorBalanced -> modelSelectorAccurate
+        modelSelectorFast -> modelSelectorBalanced
+        else -> modelSelectorAccurate
+    }
+
+    fun loadSelectedModel() {
+        loadModel(getSelectedModel(modelSelectorGroup.checkedRadioButtonId))
+    }
+
     fun loadModel(model: WhisperAccessor.Model = WhisperAccessor.Model.DEFAULT) {
         recordButton.isEnabled = false
         improveButton.isEnabled = false
@@ -189,14 +214,19 @@ class WhisperInputMethodService : InputMethodService() {
         modelLoadingIndicator.visibility = VISIBLE
 
         WhisperAccessor.loadModelAsync(application, model).thenRun {
+            println("Model loaded")
             Handler(Looper.getMainLooper()).post {
                 modelLoadingIndicator.visibility = INVISIBLE
                 recordButton.isEnabled = true
-                improveButton.isEnabled = true
+//                improveButton.isEnabled = true
                 modelSelectorGroup.children.forEach { it.isEnabled = true }
                 languageSelectorGroup.children.forEach { it.isEnabled = true }
+
+                if(isImprovePending) {
+                    isImprovePending = false
+                    transcribe()
+                }
             }
-            println("Model loaded")
         }
     }
 
@@ -222,6 +252,7 @@ class WhisperInputMethodService : InputMethodService() {
             println(transcription)
 
             currentInputConnection.commitText(transcription.trim(), 1)
+            lastInsert = transcription.trim()
 
             Handler(Looper.getMainLooper()).post {
                 computationIndicator.visibility = INVISIBLE
