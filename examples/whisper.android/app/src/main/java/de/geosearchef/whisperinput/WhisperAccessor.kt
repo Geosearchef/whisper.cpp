@@ -49,6 +49,10 @@ object WhisperAccessor {
         whisperContext = WhisperContext.createContextFromAsset(application.assets, "models/" + model.fileName)
     }
 
+    fun isModelAvailable(application: Application, model: Model): Boolean {
+        return application.assets.list("models/")?.let { model.fileName in it } ?: false
+    }
+
     fun generateTmpRecordingFile() = File.createTempFile("rec", "wav")
 
     enum class Model(val fileName: String, val label: String = fileName) {

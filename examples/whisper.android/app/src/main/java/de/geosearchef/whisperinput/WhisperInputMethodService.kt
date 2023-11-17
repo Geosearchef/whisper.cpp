@@ -12,8 +12,7 @@ import android.provider.Settings
 import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.INVISIBLE
-import android.view.View.VISIBLE
+import android.view.View.*
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
@@ -38,6 +37,7 @@ class WhisperInputMethodService : InputMethodService() {
 
     lateinit var modelSelectorGroup: RadioGroup
     lateinit var languageSelectorGroup: RadioGroup
+    lateinit var modelSelectorSuperAccurate: RadioButton
     lateinit var modelSelectorAccurate: RadioButton
     lateinit var modelSelectorBalanced: RadioButton
     lateinit var modelSelectorFast: RadioButton
@@ -58,6 +58,7 @@ class WhisperInputMethodService : InputMethodService() {
     var isRecording: Boolean = false
     var isImprovePending: Boolean = false
     var lastInsert: String = ""
+    var englishModelLoaded = false
 
     override fun onCreateInputView(): View {
 //        applicationContext.setTheme(R.style.Theme_WhisperInput)
@@ -73,6 +74,7 @@ class WhisperInputMethodService : InputMethodService() {
         modelSelectorGroup = view.findViewById(R.id.modelSelectorGroup)
         languageSelectorGroup = view.findViewById(R.id.languageSelectorGroup)
 
+        modelSelectorSuperAccurate = view.findViewById(R.id.modelSelectorSuperAccurate)
         modelSelectorAccurate = view.findViewById(R.id.modelSelectorAccurate)
         modelSelectorBalanced = view.findViewById(R.id.modelSelectorBalanced)
         modelSelectorFast = view.findViewById(R.id.modelSelectorFast)
@@ -131,6 +133,14 @@ class WhisperInputMethodService : InputMethodService() {
             loadSelectedModel()
         }
 
+        languageSelectorGroup.setOnCheckedChangeListener { group, selectedId ->
+            val englishModelSelected = selectedId == R.id.languageSelectorEnglishModel
+            if(englishModelSelected != englishModelLoaded) {
+                loadSelectedModel()
+                englishModelLoaded = englishModelSelected
+            }
+        }
+
         spaceButton.setOnClickListener {
             currentInputConnection.commitText(" ", 1)
         }
@@ -181,29 +191,45 @@ class WhisperInputMethodService : InputMethodService() {
             }
         }
 
+        if(! WhisperAccessor.isModelAvailable(application, WhisperAccessor.Model.MEDIUM_Q)) {
+            modelSelectorSuperAccurate.visibility = GONE
+        }
+
         // load default model
-//        loadModel()
-        loadModel(WhisperAccessor.Model.BASE)
+        loadModel(WhisperAccessor.Model.DEFAULT)
 
         return view
     }
 
-    private fun getSelectedModel(selectedId: Int) = when (selectedId) {
-        R.id.modelSelectorAccurate -> WhisperAccessor.Model.SMALL_Q
-        R.id.modelSelectorBalanced -> WhisperAccessor.Model.BASE
-        R.id.modelSelectorFast -> WhisperAccessor.Model.TINY
-        else -> WhisperAccessor.Model.BASE
+    private fun getSelectedModel(selectedModelId: Int, selectedLanguageId: Int): WhisperAccessor.Model {
+        if(selectedLanguageId == R.id.languageSelectorEnglishModel) {
+            return when (selectedModelId) {
+                R.id.modelSelectorSuperAccurate -> WhisperAccessor.Model.MEDIUM_Q
+                R.id.modelSelectorAccurate -> WhisperAccessor.Model.SMALL_EN_Q
+                R.id.modelSelectorBalanced -> WhisperAccessor.Model.BASE_EN
+                R.id.modelSelectorFast -> WhisperAccessor.Model.TINY_EN
+                else -> WhisperAccessor.Model.BASE_EN
+            }
+        } else {
+            return when (selectedModelId) {
+                R.id.modelSelectorSuperAccurate -> WhisperAccessor.Model.MEDIUM_Q
+                R.id.modelSelectorAccurate -> WhisperAccessor.Model.SMALL_Q
+                R.id.modelSelectorBalanced -> WhisperAccessor.Model.BASE
+                R.id.modelSelectorFast -> WhisperAccessor.Model.TINY
+                else -> WhisperAccessor.Model.BASE
+            }
+        }
     }
 
     private fun getImprovedModelButton(current: Button) = when(current) {
-        modelSelectorAccurate -> modelSelectorAccurate
+        modelSelectorAccurate -> if(WhisperAccessor.isModelAvailable(application, WhisperAccessor.Model.MEDIUM_Q)) modelSelectorSuperAccurate else modelSelectorAccurate
         modelSelectorBalanced -> modelSelectorAccurate
         modelSelectorFast -> modelSelectorBalanced
         else -> modelSelectorAccurate
     }
 
     fun loadSelectedModel() {
-        loadModel(getSelectedModel(modelSelectorGroup.checkedRadioButtonId))
+        loadModel(getSelectedModel(modelSelectorGroup.checkedRadioButtonId, languageSelectorGroup.checkedRadioButtonId))
     }
 
     fun loadModel(model: WhisperAccessor.Model = WhisperAccessor.Model.DEFAULT) {

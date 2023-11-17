@@ -67,6 +67,11 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
                 <RadioButton
+                    android:id="@+id/modelSelectorSuperAccurate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Accurate+" />
+                <RadioButton
                     android:id="@+id/modelSelectorAccurate"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
