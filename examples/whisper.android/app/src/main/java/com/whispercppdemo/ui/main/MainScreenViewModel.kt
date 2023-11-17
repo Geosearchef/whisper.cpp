@@ -143,7 +143,7 @@ class MainScreenViewModel(private val application: Application) : ViewModel() {
             printMessage("${data.size / (16000 / 1000)} ms\n")
             printMessage("Transcribing data...\n")
             val start = System.currentTimeMillis()
-            val text = whisperContext?.transcribeData(data)
+            val text = whisperContext?.transcribeData(data, language = "auto", translate = false)
             val elapsed = System.currentTimeMillis() - start
             printMessage("Done ($elapsed ms): $text\n")
         } catch (e: Exception) {

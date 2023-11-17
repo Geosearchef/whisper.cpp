@@ -45,6 +45,7 @@ object WhisperAccessor {
     }
 
     fun loadModelAsync(application: Application, model: Model = Model.DEFAULT) = CompletableFuture.runAsync {
+        whisperContext?.let { runBlocking { it.release() } }
         whisperContext = WhisperContext.createContextFromAsset(application.assets, "models/" + model.fileName)
     }
 
