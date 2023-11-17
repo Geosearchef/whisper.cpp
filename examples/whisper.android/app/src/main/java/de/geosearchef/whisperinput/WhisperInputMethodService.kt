@@ -21,6 +21,7 @@ import android.widget.ImageButton
 import android.widget.ProgressBar
 import android.widget.RadioButton
 import android.widget.RadioGroup
+import android.widget.Switch
 import android.widget.Toast
 import android.widget.ToggleButton
 import androidx.core.content.ContextCompat
@@ -51,6 +52,8 @@ class WhisperInputMethodService : InputMethodService() {
 
     lateinit var swapKeyboardButton: ImageButton
     lateinit var exitButton: ImageButton
+
+    lateinit var translateSwitch: Switch
 
     var isRecording: Boolean = false
 
@@ -83,6 +86,8 @@ class WhisperInputMethodService : InputMethodService() {
 
         swapKeyboardButton = view.findViewById(R.id.defaultInputMethodSwitchButton)
         exitButton = view.findViewById(R.id.exitButton)
+
+        translateSwitch = view.findViewById(R.id.translateSwitch)
 
         recordButton.setOnCheckedChangeListener { buttonView, isChecked ->
             if(isChecked) {
@@ -201,8 +206,19 @@ class WhisperInputMethodService : InputMethodService() {
         modelSelectorGroup.children.forEach { it.isEnabled = false }
         languageSelectorGroup.children.forEach { it.isEnabled = false }
 
+        val language = when(languageSelectorGroup.checkedRadioButtonId) {
+            R.id.languageSelectorAuto -> "auto"
+            R.id.languageSelectorEnglish -> "en"
+            R.id.languageSelectorGerman -> "de"
+            R.id.languageSelectorEnglishModel -> "en"
+            else -> "auto"
+        }
+        val translate = translateSwitch.isChecked
+
+        println("Using language $language, translate=$translate")
+
         computationIndicator.visibility = VISIBLE
-        WhisperAccessor.transcribe().thenAccept { transcription ->
+        WhisperAccessor.transcribe(language, translate).thenAccept { transcription ->
             println(transcription)
 
             currentInputConnection.commitText(transcription.trim(), 1)
