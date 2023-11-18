@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.dp
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
-import com.whispercppdemo.R
+import de.geosearchef.whisperinput.R
 
 @Composable
 fun MainScreen(viewModel: MainScreenViewModel) {

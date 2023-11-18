@@ -25,7 +25,7 @@ import android.widget.Toast
 import android.widget.ToggleButton
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
-import com.whispercppdemo.R
+import de.geosearchef.whisperinput.R
 
 class WhisperInputMethodService : InputMethodService() {
 

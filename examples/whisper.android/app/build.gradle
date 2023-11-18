@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace 'com.whispercppdemo'
+    namespace 'de.geosearchef.whisperinput'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.whispercppdemo"
+        applicationId "de.geosearchef.whisperinput"
         minSdk 26
         targetSdk 34
         versionCode 1
