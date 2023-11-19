@@ -14,7 +14,7 @@ private class CpuInfo(private val lines: List<String>) {
     private fun getHighPerfCpuCount(): Int = try {
         getHighPerfCpuCountByFrequencies()
     } catch (e: Exception) {
-        Log.d(LOG_TAG, "Couldn't read CPU frequencies", e)
+        Log.e(LOG_TAG, "Couldn't read CPU frequencies", e)
         getHighPerfCpuCountByVariant()
     }
 
@@ -54,7 +54,7 @@ private class CpuInfo(private val lines: List<String>) {
         fun getHighPerfCpuCount(): Int = try {
             readCpuInfo().getHighPerfCpuCount()
         } catch (e: Exception) {
-            Log.d(LOG_TAG, "Couldn't read CPU info", e)
+            Log.e(LOG_TAG, "Couldn't read CPU info", e)
             // Our best guess -- just return the # of CPUs minus 4.
             (Runtime.getRuntime().availableProcessors() - 4).coerceAtLeast(0)
         }

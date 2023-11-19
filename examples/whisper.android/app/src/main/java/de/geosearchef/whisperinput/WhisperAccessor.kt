@@ -1,24 +1,17 @@
 package de.geosearchef.whisperinput
 
 import android.app.Application
-import android.widget.Toast
-import com.whispercpp.whisper.WhisperContext
-import com.whispercppdemo.media.decodeWaveFile
 import com.whispercppdemo.recorder.Recorder
 import kotlinx.coroutines.runBlocking
 import java.io.File
-import java.lang.RuntimeException
-import java.nio.file.Paths
 import java.util.concurrent.CompletableFuture
 
-object WhisperAccessor {
+abstract class WhisperAccessor {
 
     var lastRecording: File? = null
     val recorder = Recorder()
 
-    var whisperContext: WhisperContext? = null
-
-    fun startRecording() = runBlocking {
+    fun startRecording(): Unit = runBlocking {
         generateTmpRecordingFile().let { file ->
             lastRecording = file
             recorder.startRecording(file, Exception::printStackTrace)
@@ -29,34 +22,15 @@ object WhisperAccessor {
         recorder.stopRecording()
     }
 
-    fun transcribe(language: String = "auto", translate: Boolean = false) : CompletableFuture<String> = CompletableFuture.supplyAsync {
-        val context = whisperContext ?: throw RuntimeException("Model not loaded")
-
-        val audio = lastRecording?.let { decodeWaveFile(it) } ?: throw RuntimeException("Last recording file not found")
-
-        // TODO: do we have to delete the audio again?
-        // TODO: do not write to disk
-
-        // TODO: add cleanup, e.g. context.release()
-        return@supplyAsync runBlocking {
-            val transcription = context.transcribeData(audio, language = language, translate = translate)
-            return@runBlocking transcription
-        }
-    }
-
-    fun loadModelAsync(application: Application, model: Model = Model.DEFAULT) = CompletableFuture.runAsync {
-        whisperContext?.let { runBlocking { it.release() } }
-        whisperContext = WhisperContext.createContextFromAsset(application.assets, "models/" + model.fileName)
-    }
-
-    fun isModelAvailable(application: Application, model: Model): Boolean {
-        return application.assets.list("models/")?.let { model.fileName in it } ?: false
-    }
-
     fun generateTmpRecordingFile() = File.createTempFile("rec", "wav")
 
-    enum class Model(val fileName: String, val label: String = fileName) {
-        TINY("ggml-tiny.bin"), BASE("ggml-base.bin"), SMALL_Q("ggml-small-q5_1.bin"),
+
+    abstract fun transcribe(language: String = "auto", translate: Boolean = false) : CompletableFuture<String>
+    abstract fun loadModelAsync(application: Application, model: WhisperAccessor.Model = WhisperAccessor.Model.DEFAULT): CompletableFuture<Void>
+    abstract fun isModelAvailable(application: Application, model: Model): Boolean
+
+    enum class Model(val fileName: String, val tfModelFileName: String? = null, val tfVocabFileName: String? = null, val label: String = fileName) {
+        TINY("ggml-tiny.bin", "whisper-tiny.tflite", "tflt-vocab-mel-tiny.bin"), BASE("ggml-base.bin"), SMALL_Q("ggml-small-q5_1.bin", "whisper-small.tflite", "tflt-vocab-mel-small.bin"),
         MEDIUM_Q("ggml-medium-q5_0.bin"),
         TINY_EN("ggml-tiny.en.bin"), BASE_EN("ggml-base.en.bin"), SMALL_EN_Q("ggml-small.en-q5_1.bin");
 

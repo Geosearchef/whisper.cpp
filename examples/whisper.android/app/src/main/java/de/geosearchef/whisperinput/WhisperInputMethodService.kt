@@ -1,6 +1,7 @@
 package de.geosearchef.whisperinput
 
 import android.Manifest
+import android.app.ActivityManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.inputmethodservice.InputMethodService
@@ -28,6 +29,9 @@ import androidx.core.view.children
 import de.geosearchef.whisperinput.R
 
 class WhisperInputMethodService : InputMethodService() {
+
+//    val whisperAccessor: WhisperAccessor = WhisperAccessorCpp()
+    val whisperAccessor: WhisperAccessor = WhisperAccessorTFLite()
 
     lateinit var recordButton: ToggleButton
     lateinit var improveButton: Button
@@ -61,6 +65,12 @@ class WhisperInputMethodService : InputMethodService() {
     var englishModelLoaded = false
 
     override fun onCreateInputView(): View {
+
+        android.os.Debug.waitForDebugger()
+
+        println("Memory available: ${(getSystemService(ACTIVITY_SERVICE) as ActivityManager).memoryClass} MB")
+        println("Large memory: ${(getSystemService(ACTIVITY_SERVICE) as ActivityManager).largeMemoryClass} MB")
+
 //        applicationContext.setTheme(R.style.Theme_WhisperInput)
         val inflater = LayoutInflater.from(ContextThemeWrapper(this, R.style.Theme_WhisperInput))
         val view = inflater.inflate(R.layout.input_method_layout, null)
@@ -101,14 +111,14 @@ class WhisperInputMethodService : InputMethodService() {
                     languageSelectorGroup.children.forEach { it.isEnabled = false }
 
                     isRecording = true
-                    WhisperAccessor.startRecording()
+                    whisperAccessor.startRecording()
                 } else {
                     recordButton.isChecked = false
                 }
             } else if(isRecording) {
                 // stop recording + execute
                 isRecording = false
-                WhisperAccessor.stopRecording()
+                whisperAccessor.stopRecording()
 
                 // TODO: can this fall through the cracks? wrong state? time out?
 
@@ -191,12 +201,15 @@ class WhisperInputMethodService : InputMethodService() {
             }
         }
 
-        if(! WhisperAccessor.isModelAvailable(application, WhisperAccessor.Model.MEDIUM_Q)) {
+        if(! whisperAccessor.isModelAvailable(application, WhisperAccessor.Model.MEDIUM_Q)) {
             modelSelectorSuperAccurate.visibility = GONE
         }
 
         // load default model
-        loadModel(WhisperAccessor.Model.DEFAULT)
+//        loadModel(WhisperAccessor.Model.DEFAULT)
+
+//        loadModel(WhisperAccessor.Model.SMALL_Q)
+        loadModel(WhisperAccessor.Model.TINY)
 
         return view
     }
@@ -222,7 +235,7 @@ class WhisperInputMethodService : InputMethodService() {
     }
 
     private fun getImprovedModelButton(current: Button) = when(current) {
-        modelSelectorAccurate -> if(WhisperAccessor.isModelAvailable(application, WhisperAccessor.Model.MEDIUM_Q)) modelSelectorSuperAccurate else modelSelectorAccurate
+        modelSelectorAccurate -> if(whisperAccessor.isModelAvailable(application, WhisperAccessor.Model.MEDIUM_Q)) modelSelectorSuperAccurate else modelSelectorAccurate
         modelSelectorBalanced -> modelSelectorAccurate
         modelSelectorFast -> modelSelectorBalanced
         else -> modelSelectorAccurate
@@ -239,7 +252,7 @@ class WhisperInputMethodService : InputMethodService() {
         languageSelectorGroup.children.forEach { it.isEnabled = false }
         modelLoadingIndicator.visibility = VISIBLE
 
-        WhisperAccessor.loadModelAsync(application, model).thenRun {
+        whisperAccessor.loadModelAsync(application, model).thenRun {
             println("Model loaded")
             Handler(Looper.getMainLooper()).post {
                 modelLoadingIndicator.visibility = INVISIBLE
@@ -274,7 +287,7 @@ class WhisperInputMethodService : InputMethodService() {
         println("Using language $language, translate=$translate")
 
         computationIndicator.visibility = VISIBLE
-        WhisperAccessor.transcribe(language, translate).thenAccept { transcription ->
+        whisperAccessor.transcribe(language, translate).thenAccept { transcription ->
             println(transcription)
 
             currentInputConnection.commitText(transcription.trim(), 1)
@@ -298,6 +311,7 @@ class WhisperInputMethodService : InputMethodService() {
             Toast.makeText(applicationContext, "Permission to record Audio not granted.", Toast.LENGTH_LONG).show()
             Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).let {
                 it.data = Uri.fromParts("package", packageName, null)
+                it.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 startActivity(it)
             }
         }
