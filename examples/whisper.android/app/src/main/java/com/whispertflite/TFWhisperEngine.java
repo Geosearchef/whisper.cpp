@@ -1,21 +1,23 @@
 package com.whispertflite;
 
 import android.content.res.AssetFileDescriptor;
-import android.os.Build;
 import android.util.Log;
-
 import org.tensorflow.lite.DataType;
 import org.tensorflow.lite.Interpreter;
 import org.tensorflow.lite.Tensor;
-import org.tensorflow.lite.nnapi.NnApiDelegate;
+import org.tensorflow.lite.gpu.CompatibilityList;
+import org.tensorflow.lite.gpu.GpuDelegate;
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.file.Files;
+
 
 public class TFWhisperEngine {
     private final String TAG = "TFWhispher";
@@ -84,14 +86,25 @@ public class TFWhisperEngine {
 
         // Set the number of threads for inference
         Interpreter.Options options = new Interpreter.Options();
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            NnApiDelegate nnApiDelegate = new NnApiDelegate();
-            options.addDelegate(nnApiDelegate);
+//        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+//            NnApiDelegate nnApiDelegate = new NnApiDelegate();
+//            options.addDelegate(nnApiDelegate);
+//        } else {
+//            options.setNumThreads(Runtime.getRuntime().availableProcessors());
+//        }
+
+        CompatibilityList compatList = new CompatibilityList();
+        if(compatList.isDelegateSupportedOnThisDevice()) {
+            Log.i(TAG, "loadModel: GPU SUPPORT ENABLED");
+            options.addDelegate(new GpuDelegate(compatList.getBestOptionsForThisDevice()));
         } else {
+            Log.i(TAG, "loadModel: GPU SUPPORT UNAVAILABLE");
             options.setNumThreads(Runtime.getRuntime().availableProcessors());
         }
 
         // crashes again on load. NNAPI? loader above? debug -> debugger
+        // TPU?
+        // conversion notebook: larger models? if only second cell executes, notebook works for generate model
 
         mInterpreter = new Interpreter(tfliteModel, options);
     }
